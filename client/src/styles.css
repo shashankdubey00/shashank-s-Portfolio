@@ -52,7 +52,62 @@ body {
     linear-gradient(180deg, var(--bg-grad-base-1) 0%, var(--bg-grad-base-2) 100%);
 }
 
+.space-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.stars {
+  position: absolute;
+  inset: -100% 0 0 0;
+  background-repeat: repeat;
+  will-change: transform;
+}
+
+.stars-sm {
+  background-image:
+    radial-gradient(2px 2px at 18% 12%, rgba(255, 255, 255, 0.4) 95%, transparent 100%),
+    radial-gradient(1px 1px at 70% 20%, rgba(255, 255, 255, 0.5) 95%, transparent 100%),
+    radial-gradient(1px 1px at 40% 65%, rgba(255, 255, 255, 0.45) 95%, transparent 100%),
+    radial-gradient(1px 1px at 85% 80%, rgba(255, 255, 255, 0.35) 95%, transparent 100%);
+  background-size: 360px 360px;
+  animation: driftStars 80s linear infinite;
+}
+
+.stars-md {
+  background-image:
+    radial-gradient(2px 2px at 25% 30%, rgba(57, 212, 255, 0.45) 95%, transparent 100%),
+    radial-gradient(2px 2px at 64% 58%, rgba(185, 255, 57, 0.28) 95%, transparent 100%),
+    radial-gradient(2px 2px at 90% 35%, rgba(255, 255, 255, 0.24) 95%, transparent 100%);
+  background-size: 520px 520px;
+  animation: driftStars 120s linear infinite;
+  opacity: 0.8;
+}
+
+.stars-lg {
+  background-image:
+    radial-gradient(3px 3px at 12% 50%, rgba(57, 212, 255, 0.25) 95%, transparent 100%),
+    radial-gradient(3px 3px at 78% 22%, rgba(255, 255, 255, 0.2) 95%, transparent 100%);
+  background-size: 700px 700px;
+  animation: driftStars 170s linear infinite;
+  opacity: 0.55;
+}
+
+@keyframes driftStars {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(50%);
+  }
+}
+
 .app-shell {
+  position: relative;
+  z-index: 1;
   width: min(1120px, 92%);
   margin: 0 auto;
   padding-bottom: 4rem;
@@ -532,6 +587,14 @@ h1 {
   .blog-page-head {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stars-sm,
+  .stars-md,
+  .stars-lg {
+    animation: none;
   }
 }
 .solo-list {

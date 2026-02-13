@@ -317,6 +317,11 @@ function App() {
 
   return (
     <BrowserRouter>
+      <div className="space-bg" aria-hidden="true">
+        <div className="stars stars-sm" />
+        <div className="stars stars-md" />
+        <div className="stars stars-lg" />
+      </div>
       <div className="app-shell">
         <TopBar theme={theme} onThemeToggle={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))} />
         <Routes>
