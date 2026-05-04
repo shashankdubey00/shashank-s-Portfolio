@@ -47,6 +47,10 @@ body {
   font-family: "Inter", sans-serif;
 }
 
+body.menu-open {
+  overflow: hidden;
+}
+
 a {
   color: inherit;
 }
@@ -126,7 +130,8 @@ a {
 .navbar-wrap {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1100;
+  background: var(--bg-primary);
   backdrop-filter: blur(12px);
   background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
 }
@@ -226,10 +231,14 @@ a {
 
 .mobile-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(10, 15, 26, 0.98);
+  inset: 70px 0 0 0;
+  background: var(--bg-primary);
+  background: color-mix(in srgb, var(--bg-primary) 96%, #000 4%);
   display: grid;
-  place-items: center;
+  align-items: start;
+  justify-items: center;
+  padding-top: 10px;
+  z-index: 1090;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease;
@@ -243,7 +252,13 @@ a {
 .mobile-links {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.9rem;
+  width: min(92vw, 360px);
+  padding: 1rem;
+  border: 1px solid var(--border-hover);
+  border-radius: 12px;
+  background: var(--bg-card);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 }
 
 .mobile-link,

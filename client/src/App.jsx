@@ -222,6 +222,16 @@ function Navbar({ theme, onThemeToggle }) {
     setMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    document.body.classList.toggle("menu-open", menuOpen);
+    return () => document.body.classList.remove("menu-open");
+  }, [menuOpen]);
+
+  const handleMobileThemeToggle = () => {
+    onThemeToggle();
+    setMenuOpen(false);
+  };
+
   const resumeActive = location.pathname === "/resume";
 
   return (
@@ -251,7 +261,7 @@ function Navbar({ theme, onThemeToggle }) {
         <button
           type="button"
           className="menu-btn"
-          aria-label="Open menu"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((prev) => !prev)}
         >
@@ -261,8 +271,8 @@ function Navbar({ theme, onThemeToggle }) {
         </button>
       </div>
 
-      <div className={`mobile-overlay ${menuOpen ? "open" : ""}`}>
-        <div className="mobile-links">
+      <div className={`mobile-overlay ${menuOpen ? "open" : ""}`} onClick={() => setMenuOpen(false)}>
+        <div className="mobile-links" onClick={(event) => event.stopPropagation()}>
           {navItems.map((item, index) => (
             <a
               key={item.id}
@@ -286,7 +296,7 @@ function Navbar({ theme, onThemeToggle }) {
             type="button"
             className="mobile-theme"
             style={{ transitionDelay: `${80 * (navItems.length + 1)}ms` }}
-            onClick={onThemeToggle}
+            onClick={handleMobileThemeToggle}
           >
             {theme === "dark" ? "☀ Light Mode" : "☾ Dark Mode"}
           </button>
@@ -703,16 +713,19 @@ function RevealCard({ children, className, delayStep = 100, index = 0 }) {
 
 function ResumePage() {
   const navigate = useNavigate();
+  const RESUME_PATH = "/assets/resume.pdf";
 
   const onDownload = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch("/assets/resume.pdf", { method: "HEAD" });
-      if (!response.ok) {
+      const response = await fetch(RESUME_PATH, { method: "HEAD", cache: "no-store" });
+      const contentType = (response.headers.get("content-type") || "").toLowerCase();
+      const isPdf = contentType.includes("application/pdf");
+      if (!response.ok || !isPdf) {
         alert("Resume PDF not found. Add file to /public/assets/resume.pdf");
         return;
       }
-      window.location.href = "/assets/resume.pdf";
+      window.open(RESUME_PATH, "_blank", "noopener,noreferrer");
     } catch {
       alert("Resume PDF not found. Add file to /public/assets/resume.pdf");
     }
@@ -724,9 +737,9 @@ function ResumePage() {
         <button type="button" className="link-button" onClick={() => navigate("/")}>
           ← Back to Portfolio
         </button>
-        <a href="/assets/resume.pdf" className="btn btn-primary" onClick={onDownload}>
+        <button type="button" className="btn btn-primary" onClick={onDownload}>
           ⬇ Download PDF
-        </a>
+        </button>
       </div>
 
       <div className="resume-sheet">
