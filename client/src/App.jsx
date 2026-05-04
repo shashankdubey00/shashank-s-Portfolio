@@ -19,7 +19,7 @@ const profile = {
   github: "https://github.com/shashankdubey00",
   linkedin: "https://www.linkedin.com/in/shashank-dubey-link",
   twitter: "https://x.com/shashankcoding",
-  email: "add-email@example.com",
+  email: "dubeyshashank444@gmail.com",
   location: "India"
 };
 
