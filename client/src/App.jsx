@@ -9,6 +9,7 @@ import {
   useNavigate,
   useParams
 } from "react-router-dom";
+import TechRadar from "./TechRadar";
 
 const profile = {
   name: "Shashank Dubey",
@@ -314,7 +315,9 @@ function HomePage() {
   const [profileImageError, setProfileImageError] = useState(false);
   const [statusRef, statusVisible] = useReveal(0.4);
   const [mouseShift, setMouseShift] = useState({ x: 0, y: 0 });
-  const [sent, setSent] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
+  const [contactStatus, setContactStatus] = useState({ type: "", text: "" });
+  const [sending, setSending] = useState(false);
   const [copyState, setCopyState] = useState("");
 
   useEffect(() => {
@@ -473,6 +476,10 @@ function HomePage() {
                 <span className="live-dot" /> X/Twitter
               </a>
             </div>
+          </div>
+
+          <div className="hero-mid">
+            <TechRadar />
           </div>
 
           <div className="hero-right" ref={statusRef}>
@@ -639,19 +646,65 @@ function HomePage() {
             </p>
 
             <form
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
-                setSent(true);
-                setTimeout(() => setSent(false), 2200);
+                if (sending) return;
+
+                setSending(true);
+                setContactStatus({ type: "", text: "" });
+
+                try {
+                  const response = await fetch(`${API_BASE}/api/contact`, {
+                    method: "POST",
+                    headers: {
+                      "content-type": "application/json"
+                    },
+                    body: JSON.stringify(contactForm)
+                  });
+
+                  const payload = await response.json().catch(() => ({}));
+                  if (!response.ok) {
+                    throw new Error(payload.message || "Failed to send message.");
+                  }
+
+                  setContactForm({ name: "", email: "", message: "" });
+                  setContactStatus({ type: "success", text: "Message sent to Telegram. I will reply soon." });
+                } catch (error) {
+                  setContactStatus({
+                    type: "error",
+                    text: error instanceof Error ? error.message : "Failed to send message."
+                  });
+                } finally {
+                  setSending(false);
+                }
               }}
             >
-              <input required placeholder="Name" />
-              <input required type="email" placeholder="Email" />
-              <textarea required placeholder="Message" rows={5} />
-              <button type="submit" className="btn btn-primary full-width">
-                Send Message →
+              <input
+                required
+                placeholder="Name"
+                value={contactForm.name}
+                onChange={(event) => setContactForm((prev) => ({ ...prev, name: event.target.value }))}
+              />
+              <input
+                required
+                type="email"
+                placeholder="Email"
+                value={contactForm.email}
+                onChange={(event) => setContactForm((prev) => ({ ...prev, email: event.target.value }))}
+              />
+              <textarea
+                required
+                placeholder="Message"
+                rows={5}
+                value={contactForm.message}
+                onChange={(event) => setContactForm((prev) => ({ ...prev, message: event.target.value }))}
+              />
+              <button type="submit" className="btn btn-primary full-width" disabled={sending}>
+                {sending ? "Sending..." : "Send Message ->"}
               </button>
-              {sent ? <p className="form-success">Message captured. I&apos;ll get back within 24 hours.</p> : null}
+              {contactStatus.text ? (
+                <p className={contactStatus.type === "error" ? "form-error" : "form-success"}>{contactStatus.text}</p>
+              ) : null}
             </form>
           </article>
 
@@ -1158,3 +1211,4 @@ function App() {
 }
 
 export default App;
+

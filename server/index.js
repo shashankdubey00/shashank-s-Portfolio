@@ -12,6 +12,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const blogsFile = path.join(__dirname, "data", "blogs.json");
 const adminSecret = process.env.BLOG_ADMIN_SECRET || "";
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || "";
+const telegramChatId = process.env.TELEGRAM_CHAT_ID || "";
 
 const allowedOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
@@ -79,6 +81,27 @@ function requireAdminSecret(req, res, next) {
   }
 
   next();
+}
+
+async function sendTelegramMessage(text) {
+  if (!telegramBotToken || !telegramChatId) {
+    throw new Error("Telegram is not configured. Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.");
+  }
+
+  const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: telegramChatId,
+      text
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error("Telegram API request failed.");
+  }
 }
 
 app.get("/api/blogs", async (_req, res) => {
@@ -168,6 +191,39 @@ app.put("/api/blogs/:id", requireAdminSecret, async (req, res) => {
     res.json(updated);
   } catch {
     res.status(500).json({ message: "Failed to update blog." });
+  }
+});
+
+app.post("/api/contact", async (req, res) => {
+  const { name, email, message } = req.body ?? {};
+
+  if (!name || !email || !message) {
+    return res.status(400).json({ message: "Name, email, and message are required." });
+  }
+
+  const cleanName = String(name).trim();
+  const cleanEmail = String(email).trim();
+  const cleanMessage = String(message).trim();
+
+  if (!cleanName || !cleanEmail || !cleanMessage) {
+    return res.status(400).json({ message: "Name, email, and message are required." });
+  }
+
+  const telegramText = [
+    "New portfolio ping",
+    "",
+    `Name: ${cleanName}`,
+    `Email: ${cleanEmail}`,
+    "Message:",
+    cleanMessage
+  ].join("\n");
+
+  try {
+    await sendTelegramMessage(telegramText);
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to send message.";
+    res.status(500).json({ message });
   }
 });
 
