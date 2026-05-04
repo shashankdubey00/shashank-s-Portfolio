@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { randomUUID } from "node:crypto";
@@ -99,8 +100,9 @@ async function sendTelegramMessage(text) {
     })
   });
 
-  if (!response.ok) {
-    throw new Error("Telegram API request failed.");
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload?.ok === false) {
+    throw new Error(payload?.description || "Telegram API request failed.");
   }
 }
 

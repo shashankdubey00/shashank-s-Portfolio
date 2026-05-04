@@ -136,10 +136,8 @@ const navItems = [
   { id: "contact", label: "/ping" }
 ];
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "https://shashanks-portfolio-api.onrender.com").replace(
-  /\/$/,
-  ""
-);
+const defaultApiBase = import.meta.env.DEV ? "http://localhost:5000" : "https://shashanks-portfolio-api.onrender.com";
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || defaultApiBase).replace(/\/$/, "");
 const HERO_LABEL = "FREELANCE FULL STACK MERN DEVELOPER";
 
 function useReveal(threshold = 0.2) {
