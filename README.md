@@ -55,3 +55,11 @@ Use backend API with admin secret header:
 - Header: `x-admin-secret: <BLOG_ADMIN_SECRET>`
 - Create: `POST /api/blogs`
 - Update: `PUT /api/blogs/:id`
+
+## Contact Form via Google Sheets + Telegram
+
+Frontend contact form can send directly to Google Apps Script (bypassing Render cold starts).
+
+- Configure `VITE_CONTACT_WEBHOOK_URL` in frontend env.
+- Apps Script setup files are in `google-apps-script/`.
+- See: `google-apps-script/README.md`

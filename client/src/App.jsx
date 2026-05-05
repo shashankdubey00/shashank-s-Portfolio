@@ -138,7 +138,14 @@ const navItems = [
 
 const defaultApiBase = import.meta.env.DEV ? "http://localhost:5000" : "https://shashanks-portfolio-api.onrender.com";
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || defaultApiBase).replace(/\/$/, "");
+const CONTACT_WEBHOOK_URL = (import.meta.env.VITE_CONTACT_WEBHOOK_URL || "").trim();
 const HERO_LABEL = "FREELANCE FULL STACK MERN DEVELOPER";
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 function useReveal(threshold = 0.2) {
   const ref = useRef(null);
@@ -392,6 +399,66 @@ function HomePage() {
     }
   };
 
+  const handleContactSubmit = async (event) => {
+    event.preventDefault();
+    if (sending) return;
+
+    if (!CONTACT_WEBHOOK_URL) {
+      setContactStatus({
+        type: "error",
+        text: "Contact form is not configured yet. Add VITE_CONTACT_WEBHOOK_URL in frontend environment variables."
+      });
+      return;
+    }
+
+    setSending(true);
+    setContactStatus({ type: "", text: "" });
+
+    const payload = {
+      ...contactForm,
+      source: "portfolio-control-room",
+      submittedAt: new Date().toISOString()
+    };
+
+    const retryDelays = [0, 4000, 6000];
+    let lastError = null;
+
+    for (let attempt = 0; attempt < retryDelays.length; attempt += 1) {
+      if (retryDelays[attempt] > 0) {
+        setContactStatus({
+          type: "info",
+          text: `Waking service and retrying (${attempt + 1}/${retryDelays.length})...`
+        });
+        await sleep(retryDelays[attempt]);
+      }
+
+      try {
+        const response = await fetch(CONTACT_WEBHOOK_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "content-type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        setContactForm({ name: "", email: "", message: "" });
+        setContactStatus({ type: "success", text: "Message sent successfully. I will get back to you soon." });
+        setSending(false);
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    setContactStatus({
+      type: "error",
+      text: "Could not send right now. Please try again in a minute or email me directly at dubeyshashank444@gmail.com."
+    });
+    setSending(false);
+    console.error("Contact submit failed:", lastError);
+  };
+
   return (
     <main>
       <section
@@ -643,40 +710,7 @@ function HomePage() {
               Have a project in mind? Whether it&apos;s a full product from scratch or improving an existing system - let&apos;s talk.
             </p>
 
-            <form
-              onSubmit={async (event) => {
-                event.preventDefault();
-                if (sending) return;
-
-                setSending(true);
-                setContactStatus({ type: "", text: "" });
-
-                try {
-                  const response = await fetch(`${API_BASE}/api/contact`, {
-                    method: "POST",
-                    headers: {
-                      "content-type": "application/json"
-                    },
-                    body: JSON.stringify(contactForm)
-                  });
-
-                  const payload = await response.json().catch(() => ({}));
-                  if (!response.ok) {
-                    throw new Error(payload.message || "Failed to send message.");
-                  }
-
-                  setContactForm({ name: "", email: "", message: "" });
-                  setContactStatus({ type: "success", text: "Message sent to Telegram. I will reply soon." });
-                } catch (error) {
-                  setContactStatus({
-                    type: "error",
-                    text: error instanceof Error ? error.message : "Failed to send message."
-                  });
-                } finally {
-                  setSending(false);
-                }
-              }}
-            >
+            <form onSubmit={handleContactSubmit}>
               <input
                 required
                 placeholder="Name"
@@ -701,7 +735,17 @@ function HomePage() {
                 {sending ? "Sending..." : "Send Message ->"}
               </button>
               {contactStatus.text ? (
-                <p className={contactStatus.type === "error" ? "form-error" : "form-success"}>{contactStatus.text}</p>
+                <p
+                  className={
+                    contactStatus.type === "error"
+                      ? "form-error"
+                      : contactStatus.type === "info"
+                        ? "form-info"
+                        : "form-success"
+                  }
+                >
+                  {contactStatus.text}
+                </p>
               ) : null}
             </form>
           </article>

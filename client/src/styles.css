@@ -957,6 +957,12 @@ a {
   color: #ef4444;
 }
 
+.form-info {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+}
+
 .contact-links-col {
   display: grid;
   gap: 0.65rem;
