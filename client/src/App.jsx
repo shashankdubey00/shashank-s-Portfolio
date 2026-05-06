@@ -9,6 +9,7 @@ import {
   useNavigate,
   useParams
 } from "react-router-dom";
+import ReactGA from "react-ga4";
 import TechRadar from "./TechRadar";
 
 const profile = {
@@ -139,6 +140,7 @@ const navItems = [
 const defaultApiBase = import.meta.env.DEV ? "http://localhost:5000" : "https://shashanks-portfolio-api.onrender.com";
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || defaultApiBase).replace(/\/$/, "");
 const CONTACT_WEBHOOK_URL = (import.meta.env.VITE_CONTACT_WEBHOOK_URL || "").trim();
+const GA_MEASUREMENT_ID = "G-F18J9S3L3S";
 const HERO_LABEL = "FREELANCE FULL STACK MERN DEVELOPER";
 
 function sleep(ms) {
@@ -443,7 +445,10 @@ function HomePage() {
         });
 
         setContactForm({ name: "", email: "", message: "" });
-        setContactStatus({ type: "success", text: "Message sent successfully. I will get back to you soon." });
+        setContactStatus({
+          type: "success",
+          text: "Submission request sent. If you do not get a reply, please email me directly at dubeyshashank444@gmail.com."
+        });
         setSending(false);
         return;
       } catch (error) {
@@ -1231,6 +1236,19 @@ function AppLayout({ theme, toggleTheme }) {
   );
 }
 
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+
+    const page = `${location.pathname}${location.search}${location.hash}`;
+    ReactGA.send({ hitType: "pageview", page, title: document.title });
+  }, [location]);
+
+  return null;
+}
+
 function App() {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem("theme");
@@ -1243,9 +1261,15 @@ function App() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+    ReactGA.initialize(GA_MEASUREMENT_ID);
+  }, []);
+
   return (
     <BrowserRouter>
       <div className="app-shell">
+        <AnalyticsTracker />
         <AppLayout theme={theme} toggleTheme={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))} />
       </div>
     </BrowserRouter>
